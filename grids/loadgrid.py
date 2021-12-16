@@ -7,6 +7,15 @@ from utilities import create_collection, insert_grid_levels
 ####### adjust input dataset to taste #########
 dataFilename = 'RG_ArgoClim_Temperature_2019.nc'
 dataTimeAxis = pd.date_range(start='01-Jan-2004', end='01-Dec-2018', freq='MS')  # dates hardcoded, need to reflect file contents
+
+## grid reinterpolation
+doReinterpolate = False # set true to turn on interpolation
+latMin = 35
+latMax = 45
+latStep = 0.5
+lonMin = 335
+lonMax = 345
+lonStep = 0.5
 ####### touch nothing below this line #########
 
 dataset_tag  = 'rg'
@@ -44,6 +53,9 @@ if measurement=='temperature':
 dataIN           = xr.open_dataset(dataFilePath+dataFilename, decode_times=False)
 dataIN['total'] = dataIN['ARGO_'+measurement.upper()+'_ANOMALY']+dataIN['ARGO_'+measurement.upper()+'_MEAN']
 
+if doReinterpolate:
+    d_new_grid = dataIN.interp(LATITUDE=np.arange(latMin,latMax,latStep), LONGITUDE=np.arange(lonMin,lonMax,lonStep), method="linear")
+    dataIN = d_new_grid
 
 ####### rename and set the time axis
 dataIN = dataIN.rename_dims({time_name: 'time'})
